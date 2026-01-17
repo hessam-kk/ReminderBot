@@ -1,3 +1,18 @@
+# dependencies
 node_modules/
+
+# wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# local tool metadata
+.freebuff/
+
+# build & test output
+dist/
+coverage/
+*.log
+
+# env files
+.env
+.env.*
