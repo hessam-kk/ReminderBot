@@ -1,0 +1,16 @@
+name = "reminder-bot"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# ── D1 database ──────────────────────────────────────────────────────────────
+# Create it once with:  npx wrangler d1 create reminder-bot-db
+# then paste the returned database_id below.
+[[d1_databases]]
+binding = "DB"
+database_name = "reminder-bot-db"
+database_id = "626f61dd-adc7-49ad-b054-a5a379c16246"
+migrations_dir = "migrations"
+
+# ── Cron: run the "due reminders" sweep every 5 minutes ─────────────────────
+[triggers]
+crons = ["*/5 * * * *"]
