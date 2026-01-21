@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Recurring reminders — the web companion to the Telegram bot." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔔%3C/text%3E%3C/svg%3E" />
+  <title>Reminder · Web</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ── Auth view ─────────────────────────────────────────────────────── -->
+  <main id="auth-view" class="view hidden">
+    <div class="auth-card">
+      <div class="auth-hero">
+        <div class="auth-logo">🔔</div>
+        <h1>Reminder</h1>
+        <p>Never forget the little things.<br />Manage your recurring reminders on the web.</p>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="login" role="tab">Log in</button>
+        <button class="tab" data-tab="register" role="tab">Create account</button>
+      </div>
+
+      <form id="auth-form" autocomplete="on">
+        <label class="field">
+          <span>Username</span>
+          <input id="auth-username" name="username" required minlength="3" maxlength="32"
+                 pattern="[a-zA-Z0-9_]+" placeholder="e.g. alex" autocomplete="username" />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="auth-password" name="password" type="password" required minlength="8"
+                 placeholder="••••••••" autocomplete="current-password" />
+        </label>
+        <p id="auth-note" class="note">Tip: you can use the same reminders as your Telegram bot — just keep them in sync.</p>
+        <p id="auth-error" class="error hidden"></p>
+        <button type="submit" class="btn btn-primary btn-block" id="auth-submit">Log in</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- ── App view ──────────────────────────────────────────────────────── -->
+  <main id="app-view" class="view hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">🔔</div>
+        <div>
+          <div class="brand-name">Reminder</div>
+          <div class="brand-sub" id="brand-user"></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span id="linked-pill" class="linked-pill hidden"></span>
+        <select id="tz-select" class="select" title="Timezone" aria-label="Timezone"></select>
+        <button class="btn btn-ghost" id="logout-btn" title="Log out">Log out</button>
+      </div>
+    </header>
+
+    <div id="link-banner" class="link-banner hidden">
+      <div class="link-banner-text">
+        <strong>🔗 Connect your Telegram</strong>
+        <span>Share one reminder list between the bot and this page.</span>
+      </div>
+      <button class="btn btn-primary btn-sm" id="link-btn">Link Telegram</button>
+    </div>
+
+    <section class="stats" aria-label="Your stats">
+      <div class="stat-card"><div class="stat-value" id="stat-active">–</div><div class="stat-label">Active</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-total">–</div><div class="stat-label">Total</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-done">–</div><div class="stat-label">Completed</div></div>
+      <div class="stat-card"><div class="stat-value" id="stat-best">–</div><div class="stat-label">Best streak</div></div>
+    </section>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="add-btn">＋ &nbsp;New reminder</button>
+      <button class="btn btn-ghost" id="refresh-btn" title="Refresh">⟳</button>
+    </div>
+
+    <section id="list" class="list" aria-live="polite"></section>
+    <p class="empty-note hidden" id="empty-note">
+      No reminders yet. Tap <b>＋ New reminder</b> to add your first one —
+      it works exactly like the Telegram bot.
+    </p>
+  </main>
+
+  <!-- ── Add / edit modal ──────────────────────────────────────────────── -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h2 id="modal-title">New reminder</h2>
+        <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      </div>
+      <form id="modal-form">
+        <label class="field">
+          <span>What should I remind you about?</span>
+          <input id="f-title" maxlength="200" required placeholder="e.g. Vitamin D pills" />
+        </label>
+
+        <div class="field">
+          <span>How often?</span>
+          <div class="chips" id="f-interval-chips"></div>
+          <div class="custom-row">
+            <input id="f-interval-custom" type="number" min="1" max="3650" inputmode="numeric" placeholder="or custom days…" />
+          </div>
+        </div>
+
+        <div class="field">
+          <span>When was the last time?</span>
+          <div class="chips" id="f-start-chips"></div>
+          <div class="custom-row">
+            <input id="f-start-custom" type="number" min="0" max="5000" inputmode="numeric" placeholder="or custom days ago…" />
+          </div>
+          <p class="hint" id="f-start-hint">Pick <b>Today</b> to start from now. Backdating aligns the cycle — e.g. last took it a week ago + every 2 weeks → first reminder in 1 week.</p>
+        </div>
+
+        <div class="field">
+          <span>What time?</span>
+          <div class="chips" id="f-time-chips"></div>
+          <div class="custom-row">
+            <input id="f-time-custom" type="time" list="time-list" />
+            <datalist id="time-list"></datalist>
+          </div>
+        </div>
+
+        <p id="modal-error" class="error hidden"></p>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modal-save">Save reminder</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Link-code dialog ────────────────────────────────────────────────── -->
+  <div id="link-modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal modal-sm" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h2>Link your Telegram</h2>
+        <button class="modal-close" id="link-modal-close" aria-label="Close">✕</button>
+      </div>
+      <p class="link-step">1. Open the bot in Telegram</p>
+      <p class="link-step">2. Send this code:</p>
+      <div class="link-code" id="link-code">••••••••</div>
+      <p class="link-copy">Send it as <code>/link &lt;code&gt;</code> to the bot. We'll detect it automatically.</p>
+      <p class="hint" id="link-status">Waiting for the code to be used…</p>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="link-cancel">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
