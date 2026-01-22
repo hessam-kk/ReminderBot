@@ -56,6 +56,8 @@ async function handleMessage(msg: any, env: Env): Promise<void> {
         return showStats(chatId, userId, env);
       case "/timezone":
         return showTz(chatId, userId, env);
+      case "/link":
+        return handleLink(chatId, userId, text, msg.from?.username ?? null, env);
       case "/cancel":
         await db.clearState(env.DB, userId);
         await tg.sendMessage(env.TELEGRAM_BOT_TOKEN, chatId, "Cancelled. ✅", {});
@@ -358,6 +360,74 @@ async function handleCallback(cb: any, env: Env): Promise<void> {
   await tg.answerCallbackQuery(env.TELEGRAM_BOT_TOKEN, cb.id, toast);
 }
 
+// ── web linking ──────────────────────────────────────────────────────────────
+
+async function handleLink(
+  chatId: number,
+  userId: number,
+  text: string,
+  telegramUsername: string | null,
+  env: Env
+): Promise<void> {
+  const code = text.replace(/^\/link\s*/i, "").trim().toUpperCase();
+  if (!/^[A-F0-9]{8}$/.test(code)) {
+    await tg.sendMessage(
+      env.TELEGRAM_BOT_TOKEN,
+      chatId,
+      "To connect your web account, get a code on the web app (🔗 Link Telegram) and send:\n<code>/link CODE</code>",
+      {}
+    );
+    return;
+  }
+
+  const codeHash = await db.sha256Hex(code);
+  const lc = await db.getLinkCode(env.DB, codeHash);
+  const now = Math.floor(Date.now() / 1000);
+  if (!lc || lc.expires_at <= now) {
+    await tg.sendMessage(
+      env.TELEGRAM_BOT_TOKEN,
+      chatId,
+      "That code is invalid or expired. Generate a fresh one on the web app and try again.",
+      {}
+    );
+    return;
+  }
+
+  const webUser = await db.getWebUserById(env.DB, lc.web_user_id);
+  if (!webUser) {
+    await db.deleteLinkCode(env.DB, codeHash);
+    await tg.sendMessage(env.TELEGRAM_BOT_TOKEN, chatId, "Something went wrong. Please try again.", {});
+    return;
+  }
+  if (webUser.telegram_user_id) {
+    await db.deleteLinkCode(env.DB, codeHash);
+    await tg.sendMessage(
+      env.TELEGRAM_BOT_TOKEN,
+      chatId,
+      "That web account is already connected to a Telegram account.",
+      {}
+    );
+    return;
+  }
+
+  // The Telegram user becomes the canonical account: create/refresh its row,
+  // adopt the web user's timezone, then move the web reminders over.
+  await db.getOrCreateUser(env.DB, userId, chatId);
+  await db.setTimezone(env.DB, userId, webUser.timezone);
+  const moved = await db.migrateWebReminders(env.DB, webUser.id, userId);
+  await db.linkWebUserToTelegram(env.DB, webUser.id, userId, telegramUsername);
+  await db.deleteLinkCode(env.DB, codeHash);
+
+  await tg.sendMessage(
+    env.TELEGRAM_BOT_TOKEN,
+    chatId,
+    `✅ <b>Connected!</b> Your web account and this bot now share one reminder list.` +
+      (moved > 0 ? `\n\n📦 Moved ${moved} reminder(s) from the web into this list.` : "") +
+      `\n\nEverything you add here or on the web shows up in both.`,
+    {}
+  );
+}
+
 // ── flows ────────────────────────────────────────────────────────────────────
 
 async function startAdd(chatId: number, userId: number, env: Env): Promise<void> {
@@ -656,6 +726,7 @@ function helpText(): string {
     `/list — manage reminders (done, pause, edit, delete)\n` +
     `/stats — streaks & stats\n` +
     `/timezone — change timezone (default Tehran 🇮🇷)\n` +
+    `/link — connect your web account (code from the web app)\n` +
     `/cancel — cancel the current action\n\n` +
     `When a reminder is due you'll get buttons: ✅ Done, ⏰ +1h, ⏰ +1d, 🗑 Delete.`
   );
