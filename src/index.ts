@@ -3,10 +3,15 @@
 import type { Env, Update } from "./types";
 import { handleUpdate } from "./bot";
 import { runCron } from "./cron";
+import { handleApi } from "./web";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
+      return handleApi(request, env);
+    }
 
     if (request.method === "POST" && url.pathname === "/webhook") {
       const secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token");
@@ -18,7 +23,7 @@ export default {
       return new Response("ok");
     }
 
-    if (url.pathname === "/" || url.pathname === "/health") {
+    if (url.pathname === "/health") {
       return new Response("ReminderBot is alive ✅");
     }
 
