@@ -34,6 +34,161 @@ export interface StateRow {
 
 const nowSec = () => Math.floor(Date.now() / 1000);
 
+// Web user ids live in a reserved high range so they can never collide with
+// Telegram user ids (which occupy the low range of `reminders.user_id`).
+// Once a web account is linked to Telegram, its reminders move into the
+// Telegram id space and this offset is no longer used for that account.
+export const WEB_ID_BASE = 1_000_000_000_000_000;
+
+export async function sha256Hex(s: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+// ── web users (browser accounts, separate from Telegram users) ──────────────
+
+export interface WebUserRow {
+  id: number;
+  username: string;
+  password_hash: string;
+  timezone: string;
+  failed_attempts: number;
+  locked_until: number | null;
+  created_at: number;
+  telegram_user_id: number | null;
+  telegram_username: string | null;
+}
+
+export async function createWebUser(db: D1Database, username: string, passwordHash: string): Promise<WebUserRow> {
+  const created = nowSec();
+  await db
+    .prepare("INSERT INTO web_users (username, password_hash, created_at) VALUES (?, ?, ?)")
+    .bind(username, passwordHash, created)
+    .run();
+  return {
+    id: Number((await db.prepare("SELECT id FROM web_users WHERE username = ?").bind(username).first())?.id ?? 0),
+    username,
+    password_hash: passwordHash,
+    timezone: "Asia/Tehran",
+    failed_attempts: 0,
+    locked_until: null,
+    created_at: created,
+    telegram_user_id: null,
+    telegram_username: null,
+  };
+}
+
+export async function getWebUserByUsername(db: D1Database, username: string): Promise<WebUserRow | null> {
+  return db.prepare("SELECT * FROM web_users WHERE username = ?").bind(username).first<WebUserRow>();
+}
+
+export async function getWebUserById(db: D1Database, id: number): Promise<WebUserRow | null> {
+  return db.prepare("SELECT * FROM web_users WHERE id = ?").bind(id).first<WebUserRow>();
+}
+
+export async function setWebUserTimezone(db: D1Database, id: number, tz: string): Promise<void> {
+  await db.prepare("UPDATE web_users SET timezone = ? WHERE id = ?").bind(tz, id).run();
+}
+
+export async function recordLoginFailure(db: D1Database, id: number, lockUntil: number): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE web_users SET failed_attempts = failed_attempts + 1,
+         locked_until = CASE WHEN failed_attempts + 1 >= 5 THEN ? ELSE locked_until END
+       WHERE id = ?`
+    )
+    .bind(lockUntil, id)
+    .run();
+}
+
+export async function resetLoginFailures(db: D1Database, id: number): Promise<void> {
+  await db.prepare("UPDATE web_users SET failed_attempts = 0, locked_until = NULL WHERE id = ?").bind(id).run();
+}
+
+export async function createSession(db: D1Database, tokenHash: string, userId: number, expiresAt: number): Promise<void> {
+  await db
+    .prepare("INSERT INTO sessions (token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)")
+    .bind(tokenHash, userId, nowSec(), expiresAt)
+    .run();
+}
+
+export async function getSessionUser(db: D1Database, tokenHash: string, now: number): Promise<WebUserRow | null> {
+  return db
+    .prepare(
+      `SELECT w.* FROM sessions s JOIN web_users w ON w.id = s.user_id
+       WHERE s.token_hash = ? AND s.expires_at > ?`
+    )
+    .bind(tokenHash, now)
+    .first<WebUserRow>();
+}
+
+export async function deleteSession(db: D1Database, tokenHash: string): Promise<void> {
+  await db.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(tokenHash).run();
+}
+
+export async function deleteExpiredSessions(db: D1Database, now: number): Promise<void> {
+  await db.prepare("DELETE FROM sessions WHERE expires_at <= ?").bind(now).run();
+}
+
+// ── telegram <-> web linking ─────────────────────────────────────────────────
+
+export interface LinkCodeRow {
+  code_hash: string;
+  web_user_id: number;
+  created_at: number;
+  expires_at: number;
+}
+
+export async function createLinkCode(
+  db: D1Database,
+  codeHash: string,
+  webUserId: number,
+  createdAt: number,
+  expiresAt: number
+): Promise<void> {
+  await db
+    .prepare("INSERT INTO link_codes (code_hash, web_user_id, created_at, expires_at) VALUES (?, ?, ?, ?)")
+    .bind(codeHash, webUserId, createdAt, expiresAt)
+    .run();
+}
+
+export async function getLinkCode(db: D1Database, codeHash: string): Promise<LinkCodeRow | null> {
+  return db.prepare("SELECT * FROM link_codes WHERE code_hash = ?").bind(codeHash).first<LinkCodeRow>();
+}
+
+export async function deleteLinkCode(db: D1Database, codeHash: string): Promise<void> {
+  await db.prepare("DELETE FROM link_codes WHERE code_hash = ?").bind(codeHash).run();
+}
+
+export async function deleteExpiredLinkCodes(db: D1Database, now: number): Promise<void> {
+  await db.prepare("DELETE FROM link_codes WHERE expires_at <= ?").bind(now).run();
+}
+
+/** Move a web account's reminders into the Telegram user's id space. */
+export async function migrateWebReminders(
+  db: D1Database,
+  webUserId: number,
+  telegramUserId: number
+): Promise<number> {
+  const res = await db
+    .prepare("UPDATE reminders SET user_id = ? WHERE user_id = ?")
+    .bind(telegramUserId, WEB_ID_BASE + webUserId)
+    .run();
+  return res.meta.changes ?? 0;
+}
+
+export async function linkWebUserToTelegram(
+  db: D1Database,
+  webUserId: number,
+  telegramUserId: number,
+  telegramUsername: string | null
+): Promise<void> {
+  await db
+    .prepare("UPDATE web_users SET telegram_user_id = ?, telegram_username = ? WHERE id = ?")
+    .bind(telegramUserId, telegramUsername, webUserId)
+    .run();
+}
+
 // ── users ────────────────────────────────────────────────────────────────────
 
 export async function getOrCreateUser(db: D1Database, userId: number, chatId?: number): Promise<UserRow> {
