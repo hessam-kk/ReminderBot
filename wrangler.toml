@@ -2,6 +2,11 @@ name = "reminder-bot"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 
+# ── Static assets (web UI) ────────────────────────────────────────────────────
+# The browser frontend lives in public/ and is served by Cloudflare's edge;
+# /api/* and /webhook still hit the worker.
+assets = { directory = "./public" }
+
 # ── D1 database ──────────────────────────────────────────────────────────────
 # Create it once with:  npx wrangler d1 create reminder-bot-db
 # then paste the returned database_id below.
