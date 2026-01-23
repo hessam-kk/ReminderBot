@@ -22,20 +22,29 @@
       <div class="tabs" role="tablist">
         <button class="tab active" data-tab="login" role="tab">Log in</button>
         <button class="tab" data-tab="register" role="tab">Create account</button>
+        <button class="tab" data-tab="telegram" role="tab">Telegram</button>
       </div>
 
       <form id="auth-form" autocomplete="on">
-        <label class="field">
-          <span>Username</span>
-          <input id="auth-username" name="username" required minlength="3" maxlength="32"
-                 pattern="[a-zA-Z0-9_]+" placeholder="e.g. alex" autocomplete="username" />
-        </label>
-        <label class="field">
-          <span>Password</span>
-          <input id="auth-password" name="password" type="password" required minlength="8"
-                 placeholder="••••••••" autocomplete="current-password" />
-        </label>
+        <div id="auth-credentials" class="auth-credentials">
+          <label class="field">
+            <span>Username</span>
+            <input id="auth-username" name="username" minlength="3" maxlength="32"
+                   pattern="[a-zA-Z0-9_]+" placeholder="e.g. alex" autocomplete="username" />
+          </label>
+          <label class="field">
+            <span>Password</span>
+            <input id="auth-password" name="password" type="password" minlength="8"
+                   placeholder="••••••••" autocomplete="current-password" />
+          </label>
+        </div>
+        <div id="auth-code-field" class="field hidden">
+          <span>Login code</span>
+          <input id="auth-code" maxlength="8" pattern="[A-Fa-f0-9]{8}"
+                 placeholder="e.g. A1B2C3D4" autocomplete="one-time-code" />
+        </div>
         <p id="auth-note" class="note">Tip: you can use the same reminders as your Telegram bot — just keep them in sync.</p>
+        <p id="auth-telegram-note" class="note hidden">Send <code>/web</code> to the bot in Telegram to get a code — your account is created and connected automatically.</p>
         <p id="auth-error" class="error hidden"></p>
         <button type="submit" class="btn btn-primary btn-block" id="auth-submit">Log in</button>
       </form>
