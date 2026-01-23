@@ -86,6 +86,10 @@ export async function getWebUserById(db: D1Database, id: number): Promise<WebUse
   return db.prepare("SELECT * FROM web_users WHERE id = ?").bind(id).first<WebUserRow>();
 }
 
+export async function getWebUserByTelegram(db: D1Database, telegramUserId: number): Promise<WebUserRow | null> {
+  return db.prepare("SELECT * FROM web_users WHERE telegram_user_id = ?").bind(telegramUserId).first<WebUserRow>();
+}
+
 export async function setWebUserTimezone(db: D1Database, id: number, tz: string): Promise<void> {
   await db.prepare("UPDATE web_users SET timezone = ? WHERE id = ?").bind(tz, id).run();
 }
@@ -134,7 +138,9 @@ export async function deleteExpiredSessions(db: D1Database, now: number): Promis
 
 export interface LinkCodeRow {
   code_hash: string;
-  web_user_id: number;
+  web_user_id: number | null;
+  telegram_user_id: number | null;
+  telegram_username: string | null;
   created_at: number;
   expires_at: number;
 }
@@ -142,13 +148,17 @@ export interface LinkCodeRow {
 export async function createLinkCode(
   db: D1Database,
   codeHash: string,
-  webUserId: number,
+  webUserId: number | null,
+  telegramUserId: number | null,
+  telegramUsername: string | null,
   createdAt: number,
   expiresAt: number
 ): Promise<void> {
   await db
-    .prepare("INSERT INTO link_codes (code_hash, web_user_id, created_at, expires_at) VALUES (?, ?, ?, ?)")
-    .bind(codeHash, webUserId, createdAt, expiresAt)
+    .prepare(
+      "INSERT INTO link_codes (code_hash, web_user_id, telegram_user_id, telegram_username, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)"
+    )
+    .bind(codeHash, webUserId, telegramUserId, telegramUsername, createdAt, expiresAt)
     .run();
 }
 
