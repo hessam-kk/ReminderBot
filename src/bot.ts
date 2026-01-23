@@ -58,6 +58,8 @@ async function handleMessage(msg: any, env: Env): Promise<void> {
         return showTz(chatId, userId, env);
       case "/link":
         return handleLink(chatId, userId, text, msg.from?.username ?? null, env);
+      case "/web":
+        return handleWebLogin(chatId, userId, msg.from?.username ?? null, env);
       case "/cancel":
         await db.clearState(env.DB, userId);
         await tg.sendMessage(env.TELEGRAM_BOT_TOKEN, chatId, "Cancelled. ✅", {});
@@ -393,6 +395,17 @@ async function handleLink(
     return;
   }
 
+  if (!lc.web_user_id) {
+    await db.deleteLinkCode(env.DB, codeHash);
+    await tg.sendMessage(
+      env.TELEGRAM_BOT_TOKEN,
+      chatId,
+      "That code wasn't issued for linking. Get a fresh one on the web app.",
+      {}
+    );
+    return;
+  }
+
   const webUser = await db.getWebUserById(env.DB, lc.web_user_id);
   if (!webUser) {
     await db.deleteLinkCode(env.DB, codeHash);
@@ -424,6 +437,36 @@ async function handleLink(
     `✅ <b>Connected!</b> Your web account and this bot now share one reminder list.` +
       (moved > 0 ? `\n\n📦 Moved ${moved} reminder(s) from the web into this list.` : "") +
       `\n\nEverything you add here or on the web shows up in both.`,
+    {}
+  );
+}
+
+// ── bot-first web login ──────────────────────────────────────────────────────
+
+function toHex(bytes: Uint8Array): string {
+  let s = "";
+  for (const b of bytes) s += b.toString(16).padStart(2, "0");
+  return s;
+}
+
+async function handleWebLogin(
+  chatId: number,
+  userId: number,
+  telegramUsername: string | null,
+  env: Env
+): Promise<void> {
+  const code = toHex(crypto.getRandomValues(new Uint8Array(4))).toUpperCase(); // 8 hex chars
+  const codeHash = await db.sha256Hex(code);
+  const now = Math.floor(Date.now() / 1000);
+  await db.deleteExpiredLinkCodes(env.DB, now);
+  await db.createLinkCode(env.DB, codeHash, null, userId, telegramUsername, now, now + 10 * 60);
+  await tg.sendMessage(
+    env.TELEGRAM_BOT_TOKEN,
+    chatId,
+    `🌐 <b>Your web login code</b>\n\n` +
+      `Open the web app and choose <b>“Log in with Telegram code”</b>, then enter:\n\n` +
+      `<code>${code}</code>\n\n` +
+      `It expires in 10 minutes and works once. If you don't have a web account yet, one will be created and connected to this bot automatically.`,
     {}
   );
 }
@@ -727,6 +770,7 @@ function helpText(): string {
     `/stats — streaks & stats\n` +
     `/timezone — change timezone (default Tehran 🇮🇷)\n` +
     `/link — connect your web account (code from the web app)\n` +
+    `/web — get a code to log into the web app\n` +
     `/cancel — cancel the current action\n\n` +
     `When a reminder is due you'll get buttons: ✅ Done, ⏰ +1h, ⏰ +1d, 🗑 Delete.`
   );
