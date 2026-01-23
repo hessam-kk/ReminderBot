@@ -17,20 +17,26 @@ you on schedule — with inline buttons for everything.
 - 🌍 **Per-user timezone**, default **Asia/Tehran 🇮🇷** (presets + custom IANA name)
 - 📊 **`/stats`** — active reminders, total completions, top streaks, upcoming
 - 👥 **Multi-user** — anyone who starts the bot gets their own private list
+- 🌐 **Web app** — the same reminders, managed from the browser at `https://reminder-bot.hessam2.workers.dev/` (own account per person, login/register, dark-mode UI)
+- 🔗 **One account, both UIs** — link your web account to Telegram with a one-time code (`/link <code>` in the bot, code from the web app); after linking, bot and web share a single reminder list and the bot keeps delivering the notifications
 
 The cron sweep runs **every 5 minutes**; reminders fire at the item's chosen
-local time (e.g. 09:00 Tehran) on its interval.
+local time (e.g. 09:00 Tehran) on its interval. Unlinked web accounts follow
+the same schedule and show as “due” on the page; linking them to Telegram
+also wires up push notifications.
 
 ## Project layout
 
 ```
-src/index.ts     — worker entry: webhook (secret-token check) + cron scheduler
-src/bot.ts       — command dispatch, add flow state machine, all button flows
+src/index.ts     — worker entry: webhook (secret-token check) + cron scheduler + /api routing
+src/bot.ts       — command dispatch, add flow state machine, all button flows, /link
 src/cron.ts      — due-reminder sweep
-src/db.ts        — D1 queries (users, states, reminders, history, stats)
+src/db.ts        — D1 queries (users, states, reminders, history, stats, web users/sessions, links)
 src/keyboards.ts — every inline keyboard
 src/time.ts      — timezone-aware scheduling math (DST-safe)
+src/web.ts       — web API: PBKDF2 auth, session cookies, user-scoped CRUD, link codes
 src/telegram.ts  — Telegram Bot API client
+public/          — browser frontend (index.html, style.css, app.js), served as static assets
 migrations/      — D1 schema
 ```
 
