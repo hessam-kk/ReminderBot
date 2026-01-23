@@ -223,13 +223,55 @@ async function startLink(user: AuthUser, env: Env): Promise<Response> {
   await db.deleteExpiredLinkCodes(env.DB, now);
   const code = toHex(crypto.getRandomValues(new Uint8Array(4))).toUpperCase(); // 8 hex chars
   const codeHash = await db.sha256Hex(code);
-  await db.createLinkCode(env.DB, codeHash, user.id, now, now + LINK_CODE_TTL);
+  await db.createLinkCode(env.DB, codeHash, user.id, null, null, now, now + LINK_CODE_TTL);
   return json({
     ok: true,
     code,
     expiresIn: LINK_CODE_TTL,
     instructions: `Open Telegram, send /link ${code} to the bot, then wait a moment.`,
   });
+}
+
+/** Bot-first login: redeem a code issued by the bot's /web command. */
+async function loginWithCode(request: Request, env: Env, secure: boolean): Promise<Response> {
+  const body = await readJson(request);
+  const code = String(body.code ?? "").trim().toUpperCase();
+  if (!/^[A-F0-9]{8}$/.test(code)) return err("Invalid code.", 400);
+
+  const codeHash = await db.sha256Hex(code);
+  const lc = await db.getLinkCode(env.DB, codeHash);
+  await db.deleteLinkCode(env.DB, codeHash); // single use
+  const now = Math.floor(Date.now() / 1000);
+  if (!lc || lc.expires_at <= now) {
+    return err("That code is invalid or expired. Send /web to the bot for a fresh one.", 400);
+  }
+  if (!lc.telegram_user_id) {
+    return err("That code wasn't issued for web login. Get one by sending /web to the bot.", 400);
+  }
+
+  const tgId = lc.telegram_user_id;
+  // The Telegram-side user must exist so the cron sweep can deliver
+  // notifications; the user's chat id equals their id in private chats.
+  await db.getOrCreateUser(env.DB, tgId, tgId);
+
+  let user = await db.getWebUserByTelegram(env.DB, tgId);
+  if (!user) {
+    // Auto-create a linked web account owned by this Telegram identity.
+    let username = `tg_${tgId}`;
+    let n = 1;
+    while (await db.getWebUserByUsername(env.DB, username)) {
+      n++;
+      username = `tg_${tgId}_${n}`;
+    }
+    const randomPass = toHex(crypto.getRandomValues(new Uint8Array(16)));
+    const hash = await makePasswordHash(randomPass); // never used; code login is the entry
+    await db.createWebUser(env.DB, username, hash);
+    const created = await db.getWebUserByUsername(env.DB, username);
+    await db.linkWebUserToTelegram(env.DB, created!.id, tgId, lc.telegram_username ?? null);
+    user = created;
+  }
+
+  return issueSession(user!, request, env, secure, { viaCode: true });
 }
 
 // ── authenticated endpoints ──────────────────────────────────────────────────
@@ -375,6 +417,7 @@ export async function handleApi(request: Request, env: Env): Promise<Response> {
     }
     if (parts[1] === "register" && method === "POST") return register(request, env, secure);
     if (parts[1] === "login" && method === "POST") return login(request, env, secure);
+    if (parts[1] === "login-code" && method === "POST") return loginWithCode(request, env, secure);
     if (parts[1] === "logout" && method === "POST") return logout(request, env, secure);
   }
 
