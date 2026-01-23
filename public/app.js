@@ -66,8 +66,12 @@ function setupAuth() {
     t.addEventListener("click", () => {
       tabs.forEach((x) => x.classList.toggle("active", x === t));
       const mode = t.dataset.tab;
-      $("#auth-submit").textContent = mode === "login" ? "Log in" : "Create account";
-      $("#auth-note").classList.toggle("hidden", mode !== "login");
+      const isTg = mode === "telegram";
+      $("#auth-submit").textContent = isTg ? "Log in with code" : mode === "login" ? "Log in" : "Create account";
+      $("#auth-credentials").classList.toggle("hidden", isTg);
+      $("#auth-code-field").classList.toggle("hidden", !isTg);
+      $("#auth-note").classList.toggle("hidden", mode !== "login" || isTg);
+      $("#auth-telegram-note").classList.toggle("hidden", !isTg);
       $("#auth-password").autocomplete = mode === "login" ? "current-password" : "new-password";
       $("#auth-error").classList.add("hidden");
     })
@@ -76,14 +80,21 @@ function setupAuth() {
   $("#auth-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const mode = document.querySelector(".tab.active").dataset.tab;
-    const username = $("#auth-username").value.trim();
-    const password = $("#auth-password").value;
     const errEl = $("#auth-error");
     errEl.classList.add("hidden");
     $("#auth-submit").disabled = true;
     try {
-      if (mode === "login") await api("/api/login", { method: "POST", body: JSON.stringify({ username, password }) });
-      else await api("/api/register", { method: "POST", body: JSON.stringify({ username, password }) });
+      if (mode === "telegram") {
+        const code = $("#auth-code").value.trim().toUpperCase();
+        if (!/^[A-F0-9]{8}$/.test(code)) throw new Error("Enter the 8-character code from the bot.");
+        await api("/api/login-code", { method: "POST", body: JSON.stringify({ code }) });
+      } else {
+        const username = $("#auth-username").value.trim();
+        const password = $("#auth-password").value;
+        if (!username || !password) throw new Error("Enter your username and password.");
+        if (mode === "login") await api("/api/login", { method: "POST", body: JSON.stringify({ username, password }) });
+        else await api("/api/register", { method: "POST", body: JSON.stringify({ username, password }) });
+      }
       await enterApp();
     } catch (err) {
       errEl.textContent = err.message;
