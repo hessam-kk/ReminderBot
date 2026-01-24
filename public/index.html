@@ -88,6 +88,11 @@
       <button class="btn btn-ghost" id="refresh-btn" data-tip="Refresh the list">⟳</button>
     </div>
 
+    <div class="list-tabs" id="list-tabs" role="tablist">
+      <button class="ltab active" data-ltab="upcoming" role="tab" data-tip="Reminders due later">Upcoming <span class="ltab-count" id="count-upcoming">0</span></button>
+      <button class="ltab" data-ltab="today" role="tab" data-tip="Reminders due now or later today">Today / overdue <span class="ltab-count" id="count-today">0</span></button>
+    </div>
+
     <section id="list" class="list" aria-live="polite"></section>
     <p class="empty-note hidden" id="empty-note">
       No reminders yet. Tap <b>＋ New reminder</b> to add your first one —
