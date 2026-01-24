@@ -229,12 +229,12 @@ function renderList() {
     const streak = r.streak > 0 ? ` · 🔥 ${r.streak}${r.bestStreak > r.streak ? ` (best ${r.bestStreak})` : ""}` : "";
 
     const actions = `
-      <button class="btn btn-sm" data-act="done" data-id="${r.id}">✅ Done</button>
-      <button class="btn btn-sm btn-ghost" data-act="snooze1h" data-id="${r.id}">⏰ +1h</button>
-      <button class="btn btn-sm btn-ghost" data-act="snooze1d" data-id="${r.id}">⏰ +1d</button>
-      <button class="btn btn-sm btn-ghost" data-act="pause" data-id="${r.id}">${r.active ? "⏸ Pause" : "▶️ Resume"}</button>
-      <button class="btn btn-sm btn-ghost" data-act="interval" data-id="${r.id}">✏️ Interval</button>
-      <button class="btn btn-sm btn-ghost danger" data-act="delete" data-id="${r.id}">🗑 Delete</button>`;
+      <button class="btn btn-sm" data-act="done" data-id="${r.id}" data-tip="Mark as done and schedule the next one">✅ Done</button>
+      <button class="btn btn-sm btn-ghost" data-act="snooze1h" data-id="${r.id}" data-tip="Snooze for 1 hour">⏰ +1h</button>
+      <button class="btn btn-sm btn-ghost" data-act="snooze1d" data-id="${r.id}" data-tip="Snooze for 1 day">⏰ +1d</button>
+      <button class="btn btn-sm btn-ghost" data-act="pause" data-id="${r.id}" data-tip="${r.active ? "Pause this reminder" : "Resume this reminder"}">${r.active ? "⏸ Pause" : "▶️ Resume"}</button>
+      <button class="btn btn-sm btn-ghost" data-act="interval" data-id="${r.id}" data-tip="Change how often this repeats">✏️ Interval</button>
+      <button class="btn btn-sm btn-ghost danger" data-act="delete" data-id="${r.id}" data-tip="Delete this reminder forever">🗑 Delete</button>`;
 
     card.innerHTML = `
       <div class="reminder-head">
@@ -293,6 +293,7 @@ function chipGroup(container, options, onChange, valueKey, value) {
     b.type = "button";
     b.className = "chip" + (o[valueKey] === value ? " active" : "");
     b.textContent = o.label;
+    if (o.tip) b.dataset.tip = o.tip;
     b.addEventListener("click", () => {
       container.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
       b.classList.add("active");
@@ -355,13 +356,28 @@ const modalVals = { interval: null, start: null, time: null };
 
 function initIntervalChips(active) {
   modalVals.interval = active;
-  chipGroup($("#f-interval-chips"), state.meta.intervals, (v) => { modalVals.interval = v; }, "days", active);
+  chipGroup(
+    $("#f-interval-chips"),
+    state.meta.intervals.map((i) => ({ ...i, tip: `Repeats ${i.label.toLowerCase()}` })),
+    (v) => { modalVals.interval = v; },
+    "days",
+    active
+  );
   $("#f-interval-custom").value = "";
 }
 
 function initStartChips(active) {
   modalVals.start = active;
-  chipGroup($("#f-start-chips"), state.meta.startOptions, (v) => { modalVals.start = v; }, "offset", active);
+  chipGroup(
+    $("#f-start-chips"),
+    state.meta.startOptions.map((o) => ({
+      ...o,
+      tip: o.offset === 0 ? "Start the cycle today" : `Cycle started ${o.label.toLowerCase()}`,
+    })),
+    (v) => { modalVals.start = v; },
+    "offset",
+    active
+  );
   $("#f-start-custom").value = "";
 }
 
@@ -369,7 +385,13 @@ const TIME_PRESETS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "23:
 
 function initTimeChips(active) {
   modalVals.time = active;
-  chipGroup($("#f-time-chips"), TIME_PRESETS.map((t) => ({ label: t, time: t })), (v) => { modalVals.time = v; }, "time", active);
+  chipGroup(
+    $("#f-time-chips"),
+    TIME_PRESETS.map((t) => ({ label: t, time: t, tip: `Fires at ${t}` })),
+    (v) => { modalVals.time = v; },
+    "time",
+    active
+  );
   $("#f-time-custom").value = "";
 }
 
