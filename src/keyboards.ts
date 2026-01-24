@@ -4,7 +4,8 @@ import { TZ_PRESETS } from "./time";
 
 export interface InlineKeyboardButton {
   text: string;
-  callback_data: string;
+  callback_data?: string;
+  url?: string; // URL buttons don't use callback_data
 }
 
 export interface InlineKeyboardMarkup {
@@ -180,10 +181,19 @@ export function confirmDeleteKeyboard(id: number, page: number): InlineKeyboardM
 export function mainMenuKeyboard(): InlineKeyboardMarkup {
   return {
     inline_keyboard: [
-      [{ text: "➕ Add reminder", callback_data: "add" }],
-      [{ text: "📋 My reminders", callback_data: "list|0" }],
-      [{ text: "📊 Stats", callback_data: "stats" }],
-      [{ text: "🌍 Timezone", callback_data: "tz" }],
+      [
+        { text: "➕ Add reminder", callback_data: "add" },
+        { text: "📋 My reminders", callback_data: "list|0" },
+      ],
+      [
+        { text: "📊 Stats", callback_data: "stats" },
+        { text: "🌍 Timezone", callback_data: "tz" },
+      ],
+      [
+        { text: "🔑 Web login code", callback_data: "web" },
+        { text: "🌐 Open web app", url: "https://reminder-bot.hessam2.workers.dev" },
+      ],
+      [{ text: "❓ Help", callback_data: "help" }],
     ],
   };
 }
