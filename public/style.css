@@ -99,7 +99,8 @@ body {
 
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 4px;
   background: color-mix(in srgb, var(--border) 55%, transparent);
   border-radius: 12px;
@@ -137,6 +138,9 @@ body {
 
 input, select, button { font: inherit; }
 
+/* Inputs without an explicit type attribute default to text — match them too,
+   otherwise they fall back to the browser's unstyled white appearance. */
+input:not([type]),
 input[type="text"], input[type="password"], input[type="number"], input[type="time"], select {
   width: 100%;
   background: var(--bg-elev);
@@ -146,6 +150,10 @@ input[type="text"], input[type="password"], input[type="number"], input[type="ti
   padding: 11px 13px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input::placeholder, select::placeholder {
+  color: var(--text-faint);
 }
 
 input:focus, select:focus {
