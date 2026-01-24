@@ -29,7 +29,7 @@
         <div id="auth-credentials" class="auth-credentials">
           <label class="field">
             <span>Username</span>
-            <input id="auth-username" name="username" minlength="3" maxlength="32"
+            <input id="auth-username" name="username" type="text" minlength="3" maxlength="32"
                    pattern="[a-zA-Z0-9_]+" placeholder="e.g. alex" autocomplete="username" />
           </label>
           <label class="field">
@@ -40,7 +40,7 @@
         </div>
         <div id="auth-code-field" class="field hidden">
           <span>Login code</span>
-          <input id="auth-code" maxlength="8" pattern="[A-Fa-f0-9]{8}"
+          <input id="auth-code" type="text" maxlength="8" pattern="[A-Fa-f0-9]{8}"
                  placeholder="e.g. A1B2C3D4" autocomplete="one-time-code" />
         </div>
         <p id="auth-note" class="note">Tip: you can use the same reminders as your Telegram bot — just keep them in sync.</p>
