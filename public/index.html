@@ -62,9 +62,9 @@
         </div>
       </div>
       <div class="topbar-right">
-        <span id="linked-pill" class="linked-pill hidden"></span>
+        <span id="linked-pill" class="linked-pill hidden" data-tip="Connected to Telegram — the bot and web share one reminder list"></span>
         <select id="tz-select" class="select" title="Timezone" aria-label="Timezone"></select>
-        <button class="btn btn-ghost" id="logout-btn" title="Log out">Log out</button>
+        <button class="btn btn-ghost tip-below" id="logout-btn" data-tip="End your session">Log out</button>
       </div>
     </header>
 
@@ -73,7 +73,7 @@
         <strong>🔗 Connect your Telegram</strong>
         <span>Share one reminder list between the bot and this page.</span>
       </div>
-      <button class="btn btn-primary btn-sm" id="link-btn">Link Telegram</button>
+      <button class="btn btn-primary btn-sm" id="link-btn" data-tip="Connect your Telegram account so the bot and this page share one list">Link Telegram</button>
     </div>
 
     <section class="stats" aria-label="Your stats">
@@ -84,8 +84,8 @@
     </section>
 
     <div class="actions">
-      <button class="btn btn-primary" id="add-btn">＋ &nbsp;New reminder</button>
-      <button class="btn btn-ghost" id="refresh-btn" title="Refresh">⟳</button>
+      <button class="btn btn-primary" id="add-btn" data-tip="Create a new reminder — pick a title, interval, start date and time">＋ &nbsp;New reminder</button>
+      <button class="btn btn-ghost" id="refresh-btn" data-tip="Refresh the list">⟳</button>
     </div>
 
     <section id="list" class="list" aria-live="polite"></section>
@@ -100,7 +100,7 @@
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-head">
         <h2 id="modal-title">New reminder</h2>
-        <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+        <button class="modal-close" id="modal-close" aria-label="Close" data-tip="Close">✕</button>
       </div>
       <form id="modal-form">
         <label class="field">
@@ -136,8 +136,8 @@
 
         <p id="modal-error" class="error hidden"></p>
         <div class="modal-foot">
-          <button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="modal-save">Save reminder</button>
+          <button type="button" class="btn btn-ghost" id="modal-cancel" data-tip="Discard and close">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modal-save" data-tip="Save this reminder">Save reminder</button>
         </div>
       </form>
     </div>
