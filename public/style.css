@@ -366,6 +366,54 @@ input:focus, select:focus {
 .actions .btn-primary { flex: 1; padding: 13px; font-size: 15px; }
 
 /* ── Reminder cards ───────────────────────────────────────────────────────── */
+/* ── List tabs ────────────────────────────────────────────────────────────── */
+.list-tabs {
+  display: inline-flex;
+  gap: 4px;
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.ltab {
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
+  font: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ltab.active {
+  background: var(--bg-elev);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.ltab-count {
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.ltab.active .ltab-count {
+  background: var(--grad);
+  color: var(--accent-ink);
+}
+
 .list { display: flex; flex-direction: column; gap: 12px; }
 
 .reminder {
