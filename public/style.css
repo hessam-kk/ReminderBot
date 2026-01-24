@@ -182,6 +182,45 @@ input:focus, select:focus {
   border-radius: var(--radius-sm);
 }
 
+/* ── Tooltips ─────────────────────────────────────────────────────────────── */
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  max-width: 240px;
+  white-space: normal;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+  z-index: 40;
+}
+
+[data-tip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Tooltips that open below the element (topbar buttons near the viewport top) */
+[data-tip].tip-below::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
