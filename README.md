@@ -19,6 +19,7 @@ you on schedule — with inline buttons for everything.
 - 👥 **Multi-user** — anyone who starts the bot gets their own private list
 - 🌐 **Web app** — the same reminders, managed from the browser at `https://reminder-bot.hessam2.workers.dev/` (own account per person, login/register, dark-mode UI)
 - 🔗 **One account, both UIs** — link your web account to Telegram with a one-time code (`/link <code>` in the bot, code from the web app); after linking, bot and web share a single reminder list and the bot keeps delivering the notifications
+- 🪪 **Bot-first login** — send `/web` to the bot, get an 8-char code, enter it under the “Telegram” tab on the web app; your account is created, linked, and you're signed in — no username/password needed
 
 The cron sweep runs **every 5 minutes**; reminders fire at the item's chosen
 local time (e.g. 09:00 Tehran) on its interval. Unlinked web accounts follow
