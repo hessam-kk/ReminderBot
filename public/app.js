@@ -33,20 +33,25 @@ const state = {
   tz: "Asia/Tehran",
   reminders: [],
   stats: null,
+  listTab: "upcoming", // "upcoming" | "today"
 };
 
 /* ── formatting ───────────────────────────────────────────────────────────── */
 function pad(n) { return String(n).padStart(2, "0"); }
 
+// Calendar-day difference (in the user's timezone) between an epoch and now.
+// <= 0 means due today or overdue; 1 = tomorrow; etc.
+function dayDiff(tz, epochSec, nowSec) {
+  const day = (ms) =>
+    new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(ms));
+  return Math.round((Date.parse(day(epochSec * 1000)) - Date.parse(day(nowSec * 1000))) / 86400000);
+}
+
 function fmtNext(tz, epochSec, nowSec) {
   const d = new Date(epochSec * 1000);
   const hm = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false })
     .format(d);
-  const dayA = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" })
-    .format(new Date(nowSec * 1000));
-  const dayB = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" })
-    .format(d);
-  const diff = Math.round((Date.parse(dayB) - Date.parse(dayA)) / 86400000);
+  const diff = dayDiff(tz, epochSec, nowSec);
   if (diff <= 0) return `today ${hm}`;
   if (diff === 1) return `tomorrow ${hm}`;
   const label = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", month: "short", day: "numeric" })
@@ -208,11 +213,37 @@ function renderList() {
   const list = $("#list");
   list.innerHTML = "";
   const empty = $("#empty-note");
-  empty.classList.toggle("hidden", state.reminders.length > 0);
-  if (state.reminders.length === 0) return;
+  const tabs = $("#list-tabs");
+
+  if (state.reminders.length === 0) {
+    tabs.classList.add("hidden");
+    empty.textContent = "No reminders yet. Tap ＋ New reminder to add your first one — it works exactly like the Telegram bot.";
+    empty.classList.remove("hidden");
+    return;
+  }
+  tabs.classList.remove("hidden");
+  empty.classList.add("hidden");
 
   const now = Math.floor(Date.now() / 1000);
+  const today = [];
+  const upcoming = [];
   for (const r of state.reminders) {
+    (dayDiff(state.tz, r.nextDue, now) <= 0 ? today : upcoming).push(r);
+  }
+  $("#count-today").textContent = today.length;
+  $("#count-upcoming").textContent = upcoming.length;
+
+  const items = state.listTab === "today" ? today : upcoming;
+  if (items.length === 0) {
+    empty.textContent =
+      state.listTab === "today"
+        ? "Nothing due today or overdue. 🎉"
+        : "No upcoming reminders — add one with ＋ New reminder.";
+    empty.classList.remove("hidden");
+    return;
+  }
+
+  for (const r of items) {
     const card = document.createElement("div");
     card.className = "reminder" + (r.dueNow ? " due" : "") + (r.active ? "" : " paused");
 
@@ -250,6 +281,12 @@ function renderList() {
 
     list.appendChild(card);
   }
+}
+
+function setListTab(tab) {
+  state.listTab = tab;
+  document.querySelectorAll(".ltab").forEach((b) => b.classList.toggle("active", b.dataset.ltab === tab));
+  renderList();
 }
 
 async function onAction(e) {
@@ -473,6 +510,10 @@ $("#logout-btn").addEventListener("click", async () => {
   location.reload();
 });
 $("#list").addEventListener("click", onAction);
+$("#list-tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".ltab");
+  if (btn) setListTab(btn.dataset.ltab);
+});
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modal-backdrop").classList.contains("hidden")) hideModal(); });
 
 setupAuth();
