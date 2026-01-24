@@ -329,6 +329,16 @@ async function handleCallback(cb: any, env: Env): Promise<void> {
       await showStats(chatId, userId, env, messageId);
       break;
 
+    case "help":
+      await editOrSend(env.TELEGRAM_BOT_TOKEN, chatId, messageId, helpText(), {
+        reply_markup: mainMenuKeyboard(),
+      });
+      break;
+
+    case "web":
+      await handleWebLogin(chatId, userId, cb.from?.username ?? null, env);
+      break;
+
     case "tz":
       await showTz(chatId, userId, env, messageId);
       break;
@@ -772,6 +782,7 @@ function helpText(): string {
     `/link — connect your web account (code from the web app)\n` +
     `/web — get a code to log into the web app\n` +
     `/cancel — cancel the current action\n\n` +
-    `When a reminder is due you'll get buttons: ✅ Done, ⏰ +1h, ⏰ +1d, 🗑 Delete.`
+    `When a reminder is due you'll get buttons: ✅ Done, ⏰ +1h, ⏰ +1d, 🗑 Delete.\n\n` +
+    `🌐 <b>Web app</b>: reminder-bot.hessam2.workers.dev — manage reminders in your browser, log in with a code from /web.`
   );
 }
