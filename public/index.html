@@ -117,16 +117,16 @@
         <div class="field">
           <span>How often?</span>
           <div class="chips" id="f-interval-chips"></div>
-          <div class="custom-row">
-            <input id="f-interval-custom" type="number" min="1" max="3650" inputmode="numeric" placeholder="or custom days…" />
+          <div class="custom-row hidden">
+            <input id="f-interval-custom" type="number" min="1" max="3650" inputmode="numeric" placeholder="e.g. 3 days" />
           </div>
         </div>
 
         <div class="field">
           <span>When was the last time?</span>
           <div class="chips" id="f-start-chips"></div>
-          <div class="custom-row">
-            <input id="f-start-custom" type="number" min="0" max="5000" inputmode="numeric" placeholder="or custom days ago…" />
+          <div class="custom-row hidden">
+            <input id="f-start-custom" type="number" min="0" max="5000" inputmode="numeric" placeholder="e.g. 10 days ago" />
           </div>
           <p class="hint" id="f-start-hint">Pick <b>Today</b> to start from now. Backdating aligns the cycle — e.g. last took it a week ago + every 2 weeks → first reminder in 1 week.</p>
         </div>
@@ -134,7 +134,7 @@
         <div class="field">
           <span>What time?</span>
           <div class="chips" id="f-time-chips"></div>
-          <div class="custom-row">
+          <div class="custom-row hidden">
             <input id="f-time-custom" type="time" list="time-list" />
             <datalist id="time-list"></datalist>
           </div>
