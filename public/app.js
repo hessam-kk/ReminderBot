@@ -375,7 +375,7 @@ async function onAction(e) {
 /* ── modal: add & edit interval ───────────────────────────────────────────── */
 let editingId = null;
 
-function chipGroup(container, options, onChange, valueKey, value) {
+function chipGroup(container, options, onChange, valueKey, value, custom) {
   container.innerHTML = "";
   for (const o of options) {
     const b = document.createElement("button");
@@ -390,6 +390,28 @@ function chipGroup(container, options, onChange, valueKey, value) {
     });
     container.appendChild(b);
   }
+  if (custom) {
+    const cb = document.createElement("button");
+    cb.type = "button";
+    cb.className = "chip chip-custom";
+    cb.textContent = custom.label;
+    cb.addEventListener("click", () => {
+      container.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      cb.classList.add("active");
+      custom.onCustom();
+    });
+    container.appendChild(cb);
+  }
+}
+
+function showCustom(row, input) {
+  row.classList.remove("hidden");
+  input.focus();
+}
+
+function hideCustom(row, input) {
+  row.classList.add("hidden");
+  input.value = "";
 }
 
 function openAddModal() {
@@ -445,66 +467,78 @@ const modalVals = { interval: null, start: null, time: null };
 
 function initIntervalChips(active) {
   modalVals.interval = active;
+  const row = $("#f-interval-custom").closest(".custom-row");
+  hideCustom(row, $("#f-interval-custom"));
   chipGroup(
     $("#f-interval-chips"),
     state.meta.intervals.map((i) => ({ ...i, tip: `Repeats ${i.label.toLowerCase()}` })),
-    (v) => { modalVals.interval = v; },
+    (v) => { modalVals.interval = v; hideCustom(row, $("#f-interval-custom")); },
     "days",
-    active
+    active,
+    { label: "✏️ Custom…", onCustom: () => { modalVals.interval = null; showCustom(row, $("#f-interval-custom")); } }
   );
-  $("#f-interval-custom").value = "";
 }
 
 function initStartChips(active) {
   modalVals.start = active;
+  const row = $("#f-start-custom").closest(".custom-row");
+  hideCustom(row, $("#f-start-custom"));
   chipGroup(
     $("#f-start-chips"),
     state.meta.startOptions.map((o) => ({
       ...o,
       tip: o.offset === 0 ? "Start the cycle today" : `Cycle started ${o.label.toLowerCase()}`,
     })),
-    (v) => { modalVals.start = v; },
+    (v) => { modalVals.start = v; hideCustom(row, $("#f-start-custom")); },
     "offset",
-    active
+    active,
+    { label: "✏️ Custom…", onCustom: () => { modalVals.start = null; showCustom(row, $("#f-start-custom")); } }
   );
-  $("#f-start-custom").value = "";
 }
 
 const TIME_PRESETS = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "23:00"];
 
 function initTimeChips(active) {
   modalVals.time = active;
+  const row = $("#f-time-custom").closest(".custom-row");
+  hideCustom(row, $("#f-time-custom"));
   chipGroup(
     $("#f-time-chips"),
     TIME_PRESETS.map((t) => ({ label: t, time: t, tip: `Fires at ${t}` })),
-    (v) => { modalVals.time = v; },
+    (v) => { modalVals.time = v; hideCustom(row, $("#f-time-custom")); },
     "time",
-    active
+    active,
+    { label: "✏️ Custom…", onCustom: () => { modalVals.time = null; showCustom(row, $("#f-time-custom")); } }
   );
-  $("#f-time-custom").value = "";
 }
 
 $("#f-interval-custom").addEventListener("input", () => {
   const n = parseInt($("#f-interval-custom").value, 10);
+  const chips = $("#f-interval-chips");
   if (n >= 1 && n <= 3650) {
     modalVals.interval = n;
-    $("#f-interval-chips").querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+    chips.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+    chips.querySelector(".chip-custom")?.classList.add("active");
   }
 });
 
 $("#f-start-custom").addEventListener("input", () => {
   const n = parseInt($("#f-start-custom").value, 10);
+  const chips = $("#f-start-chips");
   if (n >= 0 && n <= 5000) {
     modalVals.start = n;
-    $("#f-start-chips").querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+    chips.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+    chips.querySelector(".chip-custom")?.classList.add("active");
   }
 });
 
 $("#f-time-custom").addEventListener("input", () => {
   const v = $("#f-time-custom").value;
+  const chips = $("#f-time-chips");
   if (/^\d{2}:\d{2}$/.test(v)) {
     modalVals.time = v;
-    $("#f-time-chips").querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+    chips.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+    chips.querySelector(".chip-custom")?.classList.add("active");
   }
 });
 
@@ -514,16 +548,26 @@ $("#modal-form").addEventListener("submit", async (e) => {
   errEl.classList.add("hidden");
   $("#modal-save").disabled = true;
   try {
+    const customOpen = (id) => !$(id).closest(".custom-row").classList.contains("hidden");
     if (editingId) {
-      if (modalVals.interval === null) throw new Error("Pick an interval.");
+      if (modalVals.interval === null) {
+        throw new Error(customOpen("#f-interval-custom") ? "Enter how many days between reminders." : "Pick an interval.");
+      }
       await api(`/api/reminders/${editingId}/interval`, { method: "POST", body: JSON.stringify({ days: modalVals.interval }) });
       toast("✅ Interval updated");
     } else {
       const title = $("#f-title").value.trim();
       if (!title) throw new Error("Give your reminder a name.");
-      if (modalVals.interval === null) throw new Error("Pick how often.");
-      if (modalVals.start === null) modalVals.start = 0;
-      if (modalVals.time === null) throw new Error("Pick a time.");
+      if (modalVals.interval === null) {
+        throw new Error(customOpen("#f-interval-custom") ? "Enter how many days between reminders." : "Pick how often.");
+      }
+      if (modalVals.start === null) {
+        if (customOpen("#f-start-custom")) throw new Error("Enter how many days ago, or pick a start.");
+        modalVals.start = 0;
+      }
+      if (modalVals.time === null) {
+        throw new Error(customOpen("#f-time-custom") ? "Enter a time." : "Pick a time.");
+      }
       const [h, m] = modalVals.time.split(":").map(Number);
       const r = await api("/api/reminders", {
         method: "POST",
