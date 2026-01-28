@@ -181,7 +181,8 @@ function buildTzSelect() {
   for (const p of state.meta.tzPresets) {
     const opt = document.createElement("option");
     opt.value = p.id;
-    opt.textContent = p.label;
+    // Flags are browser-inconsistent; use a uniform text code instead.
+    opt.textContent = p.code === p.name ? p.code : `${p.code} · ${p.name}`;
     sel.appendChild(opt);
   }
   sel.value = state.tz;
