@@ -12,6 +12,8 @@
   --danger: #e5484d;
   --success: #2ea86b;
   --warn: #d97706;
+  --scroll-thumb: rgba(23, 26, 36, 0.18);
+  --scroll-thumb-hover: rgba(23, 26, 36, 0.32);
   --radius: 16px;
   --radius-sm: 10px;
   --shadow-sm: 0 1px 2px rgba(23, 26, 36, 0.05);
@@ -30,6 +32,8 @@
   --text-soft: #a6adc0;
   --text-faint: #6d7487;
   --border: #262b38;
+  --scroll-thumb: rgba(238, 240, 246, 0.16);
+  --scroll-thumb-hover: rgba(238, 240, 246, 0.3);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
@@ -44,10 +48,44 @@
     --text-soft: #a6adc0;
     --text-faint: #6d7487;
     --border: #262b38;
+    --scroll-thumb: rgba(238, 240, 246, 0.16);
+    --scroll-thumb-hover: rgba(238, 240, 246, 0.3);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.45);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
   }
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;                      /* Firefox */
+  scrollbar-color: var(--scroll-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;               /* inset the thumb, no fat edges */
+  transition: background-color 0.15s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scroll-thumb-hover);
+}
+
+/* Modal content shouldn't hug the styled thumb */
+.modal {
+  scrollbar-gutter: stable;
 }
 
 /* ── Icons ────────────────────────────────────────────────────────────────── */
