@@ -24,13 +24,33 @@ function applyTheme(theme) {
 
 function updateThemeIcon() {
   const btn = $("#theme-btn");
-  if (btn) btn.textContent = effectiveTheme() === "dark" ? "☀️" : "🌙";
+  if (btn) btn.innerHTML = effectiveTheme() === "dark" ? icon("sun") : icon("moon");
 }
 
 // Keep the icon in sync when the OS theme changes (unless the user overrode it)
 themeMedia.addEventListener("change", () => {
   if (!localStorage.getItem(THEME_KEY)) updateThemeIcon();
 });
+
+/* ── svg icons ────────────────────────────────────────────────────────────── */
+const ICONS = {
+  bell: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>',
+  sun: '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>',
+  moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>',
+  refresh: '<polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>',
+  check: '<polyline points="20 6 9 17 4 12"></polyline>',
+  clock: '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>',
+  pause: '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>',
+  play: '<polygon points="5 3 19 12 5 21 5 3"></polygon>',
+  pencil: '<path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>',
+  trash: '<polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>',
+  link: '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>',
+};
+
+function icon(name) {
+  return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+}
 
 /* ── tiny helpers ─────────────────────────────────────────────────────────── */
 const $ = (sel) => document.querySelector(sel);
@@ -292,12 +312,12 @@ function renderList() {
     const streak = r.streak > 0 ? ` · 🔥 ${r.streak}${r.bestStreak > r.streak ? ` (best ${r.bestStreak})` : ""}` : "";
 
     const actions = `
-      <button class="btn btn-sm" data-act="done" data-id="${r.id}" data-tip="Mark as done and schedule the next one">✅ Done</button>
-      <button class="btn btn-sm btn-ghost" data-act="snooze1h" data-id="${r.id}" data-tip="Snooze for 1 hour">⏰ +1h</button>
-      <button class="btn btn-sm btn-ghost" data-act="snooze1d" data-id="${r.id}" data-tip="Snooze for 1 day">⏰ +1d</button>
-      <button class="btn btn-sm btn-ghost" data-act="pause" data-id="${r.id}" data-tip="${r.active ? "Pause this reminder" : "Resume this reminder"}">${r.active ? "⏸ Pause" : "▶️ Resume"}</button>
-      <button class="btn btn-sm btn-ghost" data-act="interval" data-id="${r.id}" data-tip="Change how often this repeats">✏️ Interval</button>
-      <button class="btn btn-sm btn-ghost danger" data-act="delete" data-id="${r.id}" data-tip="Delete this reminder forever">🗑 Delete</button>`;
+      <button class="btn btn-sm" data-act="done" data-id="${r.id}" data-tip="Mark as done and schedule the next one">${icon("check")} Done</button>
+      <button class="btn btn-sm btn-ghost" data-act="snooze1h" data-id="${r.id}" data-tip="Snooze for 1 hour">${icon("clock")} +1h</button>
+      <button class="btn btn-sm btn-ghost" data-act="snooze1d" data-id="${r.id}" data-tip="Snooze for 1 day">${icon("clock")} +1d</button>
+      <button class="btn btn-sm btn-ghost" data-act="pause" data-id="${r.id}" data-tip="${r.active ? "Pause this reminder" : "Resume this reminder"}">${icon(r.active ? "pause" : "play")} ${r.active ? "Pause" : "Resume"}</button>
+      <button class="btn btn-sm btn-ghost" data-act="interval" data-id="${r.id}" data-tip="Change how often this repeats">${icon("pencil")} Interval</button>
+      <button class="btn btn-sm btn-ghost danger" data-act="delete" data-id="${r.id}" data-tip="Delete this reminder forever">${icon("trash")} Delete</button>`;
 
     card.innerHTML = `
       <div class="reminder-head">
