@@ -1,5 +1,37 @@
 "use strict";
 
+/* ── theme (light / dark / system) ────────────────────────────────────────── */
+const THEME_KEY = "rb-theme";
+const themeMedia = window.matchMedia("(prefers-color-scheme: dark)");
+
+function effectiveTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  if (stored === "light" || stored === "dark") return stored;
+  return themeMedia.matches ? "dark" : "light";
+}
+
+function applyTheme(theme) {
+  if (theme === "light" || theme === "dark") {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+  } else {
+    // "system": clear the override and follow the OS preference
+    document.documentElement.removeAttribute("data-theme");
+    localStorage.removeItem(THEME_KEY);
+  }
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const btn = $("#theme-btn");
+  if (btn) btn.textContent = effectiveTheme() === "dark" ? "☀️" : "🌙";
+}
+
+// Keep the icon in sync when the OS theme changes (unless the user overrode it)
+themeMedia.addEventListener("change", () => {
+  if (!localStorage.getItem(THEME_KEY)) updateThemeIcon();
+});
+
 /* ── tiny helpers ─────────────────────────────────────────────────────────── */
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -496,6 +528,9 @@ $("#modal-form").addEventListener("submit", async (e) => {
 });
 
 /* ── boot ─────────────────────────────────────────────────────────────────── */
+$("#theme-btn").addEventListener("click", () => {
+  applyTheme(effectiveTheme() === "dark" ? "light" : "dark");
+});
 $("#link-btn").addEventListener("click", startLinkFlow);
 $("#link-modal-close").addEventListener("click", closeLinkModal);
 $("#link-cancel").addEventListener("click", closeLinkModal);
@@ -517,6 +552,9 @@ $("#list-tabs").addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modal-backdrop").classList.contains("hidden")) hideModal(); });
 
 setupAuth();
+
+// Apply the saved theme (or the system default) before the first paint of the views
+applyTheme(effectiveTheme());
 
 (async () => {
   try {
