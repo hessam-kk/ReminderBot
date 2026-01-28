@@ -21,8 +21,23 @@
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Forced themes (via the theme toggle). `data-theme` on <html> wins;
+   without it the system preference below applies. */
+:root[data-theme="dark"] {
+  --bg: #0f1117;
+  --bg-elev: #181b24;
+  --text: #eef0f6;
+  --text-soft: #a6adc0;
+  --text-faint: #6d7487;
+  --border: #262b38;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* Follow the OS/browser preference unless the user picked a theme. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #0f1117;
     --bg-elev: #181b24;
     --text: #eef0f6;
