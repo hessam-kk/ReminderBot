@@ -14,7 +14,7 @@
   <main id="auth-view" class="view hidden">
     <div class="auth-card">
       <div class="auth-hero">
-        <div class="auth-logo">🔔</div>
+        <div class="auth-logo"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
         <h1>Reminder</h1>
         <p>Never forget the little things.<br />Manage your recurring reminders on the web.</p>
       </div>
@@ -55,7 +55,7 @@
   <main id="app-view" class="view hidden">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-logo">🔔</div>
+        <div class="brand-logo"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></div>
         <div>
           <div class="brand-name">Reminder</div>
           <div class="brand-sub" id="brand-user"></div>
@@ -64,14 +64,14 @@
       <div class="topbar-right">
         <span id="linked-pill" class="linked-pill hidden" data-tip="Connected to Telegram — the bot and web share one reminder list"></span>
         <select id="tz-select" class="select" title="Timezone" aria-label="Timezone"></select>
-        <button class="btn btn-ghost tip-below" id="theme-btn" data-tip="Toggle light / dark theme" aria-label="Toggle theme">🌙</button>
+        <button class="btn btn-ghost tip-below" id="theme-btn" data-tip="Toggle light / dark theme" aria-label="Toggle theme"></button>
         <button class="btn btn-ghost tip-below" id="logout-btn" data-tip="End your session">Log out</button>
       </div>
     </header>
 
     <div id="link-banner" class="link-banner hidden">
       <div class="link-banner-text">
-        <strong>🔗 Connect your Telegram</strong>
+        <strong><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Connect your Telegram</strong>
         <span>Share one reminder list between the bot and this page.</span>
       </div>
       <button class="btn btn-primary btn-sm" id="link-btn" data-tip="Connect your Telegram account so the bot and this page share one list">Link Telegram</button>
@@ -85,8 +85,8 @@
     </section>
 
     <div class="actions">
-      <button class="btn btn-primary" id="add-btn" data-tip="Create a new reminder — pick a title, interval, start date and time">＋ &nbsp;New reminder</button>
-      <button class="btn btn-ghost" id="refresh-btn" data-tip="Refresh the list">⟳</button>
+      <button class="btn btn-primary" id="add-btn" data-tip="Create a new reminder — pick a title, interval, start date and time"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> New reminder</button>
+      <button class="btn btn-ghost" id="refresh-btn" data-tip="Refresh the list"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>
     </div>
 
     <div class="list-tabs" id="list-tabs" role="tablist">
