@@ -3,14 +3,17 @@
 
 export const DEFAULT_TZ = "Asia/Tehran";
 
+// `label` (emoji flags) is used by the Telegram keyboards, where flags render
+// natively. The web UI uses `code` + `name` instead, because flag emoji are
+// regional indicators that render inconsistently across browsers/OSes.
 export const TZ_PRESETS = [
-  { id: "Asia/Tehran", label: "🇮🇷 Tehran (UTC+3:30)" },
-  { id: "Etc/UTC", label: "🌍 UTC" },
-  { id: "Europe/London", label: "🇬🇧 London" },
-  { id: "Europe/Berlin", label: "🇩🇪 Berlin" },
-  { id: "Asia/Dubai", label: "🇦🇪 Dubai" },
-  { id: "Asia/Kolkata", label: "🇮🇳 Delhi" },
-  { id: "America/New_York", label: "🇺🇸 New York" },
+  { id: "Asia/Tehran", code: "IR", name: "Tehran (UTC+3:30)", label: "🇮🇷 Tehran (UTC+3:30)" },
+  { id: "Etc/UTC", code: "UTC", name: "UTC", label: "🌍 UTC" },
+  { id: "Europe/London", code: "GB", name: "London", label: "🇬🇧 London" },
+  { id: "Europe/Berlin", code: "DE", name: "Berlin", label: "🇩🇪 Berlin" },
+  { id: "Asia/Dubai", code: "AE", name: "Dubai", label: "🇦🇪 Dubai" },
+  { id: "Asia/Kolkata", code: "IN", name: "Delhi", label: "🇮🇳 Delhi" },
+  { id: "America/New_York", code: "US", name: "New York", label: "🇺🇸 New York" },
 ];
 
 const formatterCache = new Map<string, Intl.DateTimeFormat>();
