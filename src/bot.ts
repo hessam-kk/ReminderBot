@@ -386,7 +386,12 @@ async function handleLink(
     await tg.sendMessage(
       env.TELEGRAM_BOT_TOKEN,
       chatId,
-      "To connect your web account, get a code on the web app (🔗 Link Telegram) and send:\n<code>/link CODE</code>",
+      "🔗 <b>Connect your web account</b>\n\n" +
+        `1. Open <code>reminder-bot.hessam2.workers.dev</code> in your browser\n` +
+        `2. Log in and tap the <b>“🔗 Link Telegram”</b> banner button\n` +
+        `3. Send the code it shows here:\n` +
+        `<code>/link CODE</code>\n\n` +
+        `⚡ No web account yet? Send <code>/web</code> and I'll give you a login code instead.`,
       {}
     );
     return;
