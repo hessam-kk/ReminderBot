@@ -246,6 +246,34 @@ input:focus, select:focus {
   font-size: 12px;
 }
 
+/* Password visibility toggle */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 44px; }
+
+.pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-faint);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.pw-toggle:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.pw-toggle .icon { width: 18px; height: 18px; }
+
 .error {
   color: var(--danger);
   font-size: 13px;

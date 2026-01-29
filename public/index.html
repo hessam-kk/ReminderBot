@@ -34,8 +34,11 @@
           </label>
           <label class="field">
             <span>Password</span>
-            <input id="auth-password" name="password" type="password" minlength="8"
-                   placeholder="••••••••" autocomplete="current-password" />
+            <div class="pw-wrap">
+              <input id="auth-password" name="password" type="password" minlength="8"
+                     placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" id="pw-toggle" class="pw-toggle" aria-label="Show password"></button>
+            </div>
           </label>
         </div>
         <div id="auth-code-field" class="field hidden">
