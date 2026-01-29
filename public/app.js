@@ -168,6 +168,14 @@ function setupAuth() {
         else await api("/api/register", { method: "POST", body: JSON.stringify({ username, password }) });
       }
       await enterApp();
+      // One-time nudge right after signing up: point at the Telegram connect banner
+      if (mode === "register") {
+        const banner = $("#link-banner");
+        banner.classList.remove("hidden");
+        banner.classList.add("nudge");
+        setTimeout(() => banner.classList.remove("nudge"), 4500);
+        toast("🎉 Account created! Connect Telegram to share reminders with the bot");
+      }
     } catch (err) {
       errEl.textContent = err.message;
       errEl.classList.remove("hidden");
@@ -230,7 +238,9 @@ function renderLinkState() {
   $("#link-banner").classList.toggle("hidden", !!linked);
   const pill = $("#linked-pill");
   pill.classList.toggle("hidden", !linked);
-  pill.textContent = linked && state.me.telegramUsername ? `🔗 @${state.me.telegramUsername}` : "🔗 Connected to Telegram";
+  pill.innerHTML = linked
+    ? `${icon("link")} ${state.me.telegramUsername ? `@${esc(state.me.telegramUsername)}` : "Connected to Telegram"}`
+    : "";
 }
 
 async function startLinkFlow() {
