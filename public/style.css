@@ -250,7 +250,9 @@ input:focus, select:focus {
 .pw-wrap { position: relative; }
 .pw-wrap input { padding-right: 44px; }
 
-.pw-toggle {
+/* `.pw-wrap .pw-toggle` beats the `[data-tip]` position rule so the button
+   stays absolutely positioned inside the field. */
+.pw-wrap .pw-toggle {
   position: absolute;
   right: 6px;
   top: 50%;
@@ -267,12 +269,12 @@ input:focus, select:focus {
   transition: color 0.15s, background 0.15s;
 }
 
-.pw-toggle:hover {
+.pw-wrap .pw-toggle:hover {
   color: var(--text);
   background: color-mix(in srgb, var(--border) 60%, transparent);
 }
 
-.pw-toggle .icon { width: 18px; height: 18px; }
+.pw-wrap .pw-toggle .icon { width: 18px; height: 18px; }
 
 .error {
   color: var(--danger);
