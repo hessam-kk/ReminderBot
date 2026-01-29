@@ -57,3 +57,11 @@ export async function answerCallbackQuery(
   }
   return tgCall(token, "answerCallbackQuery", params);
 }
+
+export async function deleteMessage(token: string, chatId: number, messageId: number): Promise<void> {
+  try {
+    await tgCall(token, "deleteMessage", { chat_id: chatId, message_id: messageId });
+  } catch {
+    // message already gone, too old to delete, or bot blocked — ignore
+  }
+}
