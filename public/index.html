@@ -87,6 +87,17 @@
       <div class="stat-card"><div class="stat-value" id="stat-best">–</div><div class="stat-label">Best streak</div></div>
     </section>
 
+    <section class="stats-detail hidden" id="stats-detail">
+      <div class="stat-panel">
+        <h3 class="stat-panel-title">🔥 Top streaks</h3>
+        <ul class="stat-list" id="stats-streaks"></ul>
+      </div>
+      <div class="stat-panel">
+        <h3 class="stat-panel-title">🔜 Upcoming</h3>
+        <ul class="stat-list" id="stats-upcoming"></ul>
+      </div>
+    </section>
+
     <div class="actions">
       <button class="btn btn-primary" id="add-btn" data-tip="Create a new reminder — pick a title, interval, start date and time"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> New reminder</button>
       <button class="btn btn-ghost" id="refresh-btn" data-tip="Refresh the list"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></button>
@@ -95,6 +106,7 @@
     <div class="list-tabs" id="list-tabs" role="tablist">
       <button class="ltab active" data-ltab="upcoming" role="tab" data-tip="Reminders due later">Upcoming <span class="ltab-count" id="count-upcoming">0</span></button>
       <button class="ltab" data-ltab="today" role="tab" data-tip="Reminders due now or later today">Today / overdue <span class="ltab-count" id="count-today">0</span></button>
+      <button class="ltab" data-ltab="paused" role="tab" data-tip="Paused reminders — silenced until you resume them">Paused <span class="ltab-count" id="count-paused">0</span></button>
     </div>
 
     <section id="list" class="list" aria-live="polite"></section>
@@ -167,6 +179,28 @@
       <div class="modal-foot">
         <button class="btn btn-ghost" id="link-cancel">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Custom timezone dialog ───────────────────────────────────────────── -->
+  <div id="tz-modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal modal-sm" role="dialog" aria-modal="true">
+      <div class="modal-head">
+        <h2>Custom timezone</h2>
+        <button class="modal-close" id="tz-modal-close" aria-label="Close" data-tip="Close">✕</button>
+      </div>
+      <form id="tz-form">
+        <label class="field">
+          <span>IANA timezone name</span>
+          <input id="tz-input" placeholder="e.g. Europe/Berlin, Asia/Tokyo" />
+        </label>
+        <p class="hint">Any valid IANA name works — the bot and web share it.</p>
+        <p id="tz-error" class="error hidden"></p>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" id="tz-cancel" data-tip="Discard and close">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-tip="Save this timezone">Save timezone</button>
+        </div>
+      </form>
     </div>
   </div>
 
