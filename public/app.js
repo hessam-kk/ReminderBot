@@ -87,7 +87,7 @@ const state = {
   tz: "Asia/Tehran",
   reminders: [],
   stats: null,
-  listTab: "upcoming", // "upcoming" | "today"
+  listTab: "upcoming", // "upcoming" | "today" | "paused"
 };
 
 /* ── formatting ───────────────────────────────────────────────────────────── */
@@ -208,15 +208,48 @@ function buildTzSelect() {
     opt.textContent = p.code === p.name ? p.code : `${p.code} · ${p.name}`;
     sel.appendChild(opt);
   }
+  // Show the current timezone even when it's a custom one (not a preset).
+  if (state.tz && !state.meta.tzPresets.some((p) => p.id === state.tz)) {
+    const opt = document.createElement("option");
+    opt.value = state.tz;
+    opt.textContent = state.tz;
+    sel.appendChild(opt);
+  }
+  // Custom IANA entry — parity with the bot's /timezone custom option.
+  const custom = document.createElement("option");
+  custom.value = "__custom__";
+  custom.textContent = "✏️ Custom…";
+  sel.appendChild(custom);
   sel.value = state.tz;
   sel.addEventListener("change", async () => {
+    if (sel.value === "__custom__") {
+      sel.value = state.tz; // don't stick on "Custom…"
+      openTzModal();
+      return;
+    }
     try {
       const r = await api("/api/timezone", { method: "POST", body: JSON.stringify({ timezone: sel.value }) });
       state.tz = r.timezone;
       toast(`🌍 ${r.timezone}`);
+      buildTzSelect();
       await refresh();
-    } catch (err) { toast(err.message); }
+    } catch (err) {
+      toast(err.message);
+      buildTzSelect();
+    }
   });
+}
+
+/* ── Custom timezone modal ───────────────────────────────────────────────── */
+function openTzModal() {
+  $("#tz-input").value = state.tz;
+  $("#tz-error").classList.add("hidden");
+  $("#tz-modal-backdrop").classList.remove("hidden");
+  $("#tz-input").focus();
+}
+
+function closeTzModal() {
+  $("#tz-modal-backdrop").classList.add("hidden");
 }
 
 async function refresh() {
@@ -285,6 +318,17 @@ function renderStats() {
   $("#stat-total").textContent = state.stats.totalCount;
   $("#stat-done").textContent = state.stats.totalDone;
   $("#stat-best").textContent = state.stats.bestStreak;
+
+  // Top streaks + upcoming — parity with the bot's /stats.
+  const streaks = state.stats.topStreaks || [];
+  const up = state.stats.upcoming || [];
+  $("#stats-streaks").innerHTML = streaks.length
+    ? streaks.map((s) => `<li>${esc(s.title)} — 🔥 ${s.streak}</li>`).join("")
+    : '<li class="stat-empty">Nothing yet — complete your first reminder!</li>';
+  $("#stats-upcoming").innerHTML = up.length
+    ? up.map((u) => `<li>${esc(u.title)} — ${esc(u.nextHuman)}</li>`).join("")
+    : '<li class="stat-empty">No upcoming reminders.</li>';
+  $("#stats-detail").classList.toggle("hidden", !streaks.length && !up.length);
 }
 
 function renderList() {
@@ -305,17 +349,23 @@ function renderList() {
   const now = Math.floor(Date.now() / 1000);
   const today = [];
   const upcoming = [];
+  const paused = [];
   for (const r of state.reminders) {
+    if (!r.active) { paused.push(r); continue; }
     (dayDiff(state.tz, r.nextDue, now) <= 0 ? today : upcoming).push(r);
   }
   $("#count-today").textContent = today.length;
   $("#count-upcoming").textContent = upcoming.length;
+  $("#count-paused").textContent = paused.length;
 
-  const items = state.listTab === "today" ? today : upcoming;
+  const items =
+    state.listTab === "today" ? today : state.listTab === "paused" ? paused : upcoming;
   if (items.length === 0) {
     empty.textContent =
       state.listTab === "today"
         ? "Nothing due today or overdue. 🎉"
+        : state.listTab === "paused"
+        ? "No paused reminders — pause one to silence it for a while."
         : "No upcoming reminders — add one with ＋ New reminder.";
     empty.classList.remove("hidden");
     return;
@@ -625,6 +675,25 @@ $("#link-btn").addEventListener("click", startLinkFlow);
 $("#link-modal-close").addEventListener("click", closeLinkModal);
 $("#link-cancel").addEventListener("click", closeLinkModal);
 $("#link-modal-backdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeLinkModal(); });
+$("#tz-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const tz = $("#tz-input").value.trim();
+  const errEl = $("#tz-error");
+  try {
+    const r = await api("/api/timezone", { method: "POST", body: JSON.stringify({ timezone: tz }) });
+    state.tz = r.timezone;
+    closeTzModal();
+    toast(`🌍 ${r.timezone}`);
+    buildTzSelect();
+    await refresh();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.classList.remove("hidden");
+  }
+});
+$("#tz-modal-close").addEventListener("click", closeTzModal);
+$("#tz-cancel").addEventListener("click", closeTzModal);
+$("#tz-modal-backdrop").addEventListener("click", (e) => { if (e.target === e.currentTarget) closeTzModal(); });
 $("#add-btn").addEventListener("click", openAddModal);
 $("#modal-close").addEventListener("click", hideModal);
 $("#modal-cancel").addEventListener("click", hideModal);
