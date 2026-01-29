@@ -200,6 +200,7 @@ async function handleCallback(cb: any, env: Env): Promise<void> {
       const st = await db.getState(env.DB, userId);
       if (!st) break;
       const d = JSON.parse(st.data || "{}");
+      if (messageId) await tg.deleteMessage(env.TELEGRAM_BOT_TOKEN, chatId, messageId);
       if (a === "custom") {
         await db.setState(env.DB, userId, "days", d);
         await tg.sendMessage(
@@ -219,6 +220,7 @@ async function handleCallback(cb: any, env: Env): Promise<void> {
       const st = await db.getState(env.DB, userId);
       if (!st) break;
       const d = JSON.parse(st.data || "{}");
+      if (messageId) await tg.deleteMessage(env.TELEGRAM_BOT_TOKEN, chatId, messageId);
       if (a === "back") {
         await db.setState(env.DB, userId, "interval", d);
         await tg.sendMessage(
@@ -246,6 +248,7 @@ async function handleCallback(cb: any, env: Env): Promise<void> {
       const st = await db.getState(env.DB, userId);
       if (!st) break;
       const d = JSON.parse(st.data || "{}");
+      if (messageId) await tg.deleteMessage(env.TELEGRAM_BOT_TOKEN, chatId, messageId);
       if (a === "custom") {
         await db.setState(env.DB, userId, "time", d);
         await tg.sendMessage(
