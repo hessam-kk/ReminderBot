@@ -1,7 +1,7 @@
 // D1 data access layer.
 
 import type { D1Database } from "@cloudflare/workers-types";
-import { DEFAULT_TZ, nextOccurrence } from "./time";
+import { DEFAULT_TZ, occurrenceAfterDays } from "./time";
 
 export interface UserRow {
   id: number;
@@ -320,7 +320,7 @@ export async function deleteReminder(db: D1Database, id: number): Promise<void> 
 export async function markDone(db: D1Database, id: number, now: number, tz: string): Promise<ReminderRow> {
   const r = await getReminder(db, id);
   if (!r) throw new Error("reminder not found");
-  const nextDue = nextOccurrence(tz, r.hour, r.minute, now + r.interval_days * 86400);
+  const nextDue = occurrenceAfterDays(tz, r.hour, r.minute, now, r.interval_days);
   await db
     .prepare(
       "UPDATE reminders SET streak = streak + 1, best_streak = MAX(best_streak, streak + 1), last_done_at = ?, next_due = ? WHERE id = ?"
