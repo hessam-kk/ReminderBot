@@ -469,16 +469,80 @@ input:focus, select:focus {
 }
 
 .stat-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   background: var(--bg-elev);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px 14px;
+  padding: 15px 16px;
   box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.stat-value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* colored top edge */
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-accent);
+}
+
+/* soft tinted glow in the corner */
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: -28px;
+  right: -28px;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--card-accent-soft), transparent 70%);
+  pointer-events: none;
+}
+
+.stat-ico {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--card-accent-soft);
+  color: var(--card-accent);
+}
+
+.stat-ico .icon {
+  width: 19px;
+  height: 19px;
+}
+
+.stat-body { position: relative; }
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--card-accent);
+  line-height: 1.15;
+}
 
 .stat-label { font-size: 12px; color: var(--text-faint); margin-top: 2px; }
+
+.stat-active { --card-accent: var(--success); --card-accent-soft: color-mix(in srgb, var(--success) 13%, transparent); }
+.stat-total { --card-accent: var(--accent); --card-accent-soft: color-mix(in srgb, var(--accent) 13%, transparent); }
+.stat-done { --card-accent: var(--accent-2); --card-accent-soft: color-mix(in srgb, var(--accent-2) 13%, transparent); }
+.stat-best { --card-accent: var(--warn); --card-accent-soft: color-mix(in srgb, var(--warn) 13%, transparent); }
 
 .stats-detail {
   display: grid;
