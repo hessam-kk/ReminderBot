@@ -4,6 +4,17 @@ A Telegram bot deployed on **Cloudflare Workers + D1**. You type what to be
 reminded about (e.g. "Vitamin D pills"), pick an interval, and the bot pings
 you on schedule — with inline buttons for everything.
 
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Web app — dark theme](docs/screenshots/main_dark.png) | ![Web app — light theme](docs/screenshots/main_light.png) |
+| **Web app — dark theme** · stat cards, upcoming list with streaks | **Web app — light theme** · same view, light palette |
+
+![Adding a reminder](docs/screenshots/adding_modal.png)
+
+**Adding a reminder** · the “New reminder” modal with template chips (interval, start, time) and the ✏️ Custom options.
+
 ## Features
 
 - ➕ **Add reminders by typing** — any item name ("Vitamin D pills", "Water", "Backup laptop")
