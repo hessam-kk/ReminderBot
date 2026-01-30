@@ -4,7 +4,7 @@
 import type { Env } from "./types";
 import { advanceNextDue, deactivate, getDueReminders, getUser } from "./db";
 import { escapeHtml, sendMessage } from "./telegram";
-import { nextOccurrence } from "./time";
+import { occurrenceAfterDays } from "./time";
 import { dueKeyboard, intervalLabel } from "./keyboards";
 
 export async function runCron(env: Env): Promise<void> {
@@ -26,8 +26,14 @@ export async function runCron(env: Env): Promise<void> {
         reply_markup: dueKeyboard(r),
       });
       // Schedule the next cycle immediately so we never spam the same
-      // reminder; Done/Snooze may still reschedule from here.
-      await advanceNextDue(env.DB, r.id, nextOccurrence(user.timezone, r.hour, r.minute, now));
+      // reminder; Done/Snooze may still reschedule from here. The cycle is
+      // measured in local calendar days, not 24h blocks, so fractional
+      // offsets and DST can't shift it onto the wrong day.
+      await advanceNextDue(
+        env.DB,
+        r.id,
+        occurrenceAfterDays(user.timezone, r.hour, r.minute, now, r.interval_days)
+      );
     } catch (e) {
       console.error(`cron: failed to deliver reminder ${r.id}:`, e);
       // Bot blocked/chat closed → stop retrying forever
