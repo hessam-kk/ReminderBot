@@ -92,6 +92,45 @@ export function nextOccurrence(tz: string, hour: number, minute: number, afterEp
 }
 
 /**
+ * The occurrence of `hour:minute` on the local calendar day that is `days`
+ * after the local date of `fromEpoch`.
+ *
+ * Use this to advance a reminder by its interval. Adding `days * 86400` to the
+ * instant and then snapping forward is wrong: completing a daily 23:00 reminder
+ * at 23:00:05 would land on 23:00 two days later instead of tomorrow.
+ */
+export function occurrenceAfterDays(
+  tz: string,
+  hour: number,
+  minute: number,
+  fromEpoch: number,
+  days: number
+): number {
+  const from = localTimeAt(tz, fromEpoch);
+  const target = new Date(Date.UTC(from.year, from.month - 1, from.day + Math.max(1, Math.floor(days))));
+  const y = target.getUTCFullYear();
+  const mo = target.getUTCMonth();
+  const d = target.getUTCDate();
+  const nominal = Date.UTC(y, mo, d, hour, minute, 0) / 1000;
+
+  // Resolve that wall-clock time in `tz` by iterating the UTC offset, so DST
+  // changes between now and the target date are taken into account.
+  let epoch = nominal;
+  for (let i = 0; i < 3; i++) {
+    const seen = localTimeAt(tz, epoch);
+    const offset =
+      Date.UTC(seen.year, seen.month - 1, seen.day, seen.hour, seen.minute, seen.second) / 1000 - epoch;
+    const fixed = nominal - offset;
+    if (fixed === epoch) break;
+    epoch = fixed;
+  }
+
+  const check = localTimeAt(tz, epoch);
+  if (check.hour === hour && check.minute === minute) return epoch;
+  return nextOccurrence(tz, hour, minute, epoch - 1); // nonexistent local time (DST gap)
+}
+
+/**
  * First due after `now` aligned to a repeating cycle that already has a phase.
  *
  * `offsetDays` = how many days ago the LAST cycle happened (0 = today). The
