@@ -1,6 +1,7 @@
 {
   "name": "reminder-bot",
   "version": "1.0.0",
+  "license": "MIT",
   "private": true,
   "description": "Telegram recurring-reminder bot on Cloudflare Workers + D1",
   "scripts": {
