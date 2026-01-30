@@ -81,10 +81,22 @@
     </div>
 
     <section class="stats" aria-label="Your stats">
-      <div class="stat-card"><div class="stat-value" id="stat-active">–</div><div class="stat-label">Active</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-total">–</div><div class="stat-label">Total</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-done">–</div><div class="stat-label">Completed</div></div>
-      <div class="stat-card"><div class="stat-value" id="stat-best">–</div><div class="stat-label">Best streak</div></div>
+      <div class="stat-card stat-active">
+        <div class="stat-ico" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg></div>
+        <div class="stat-body"><div class="stat-value" id="stat-active">–</div><div class="stat-label">Active</div></div>
+      </div>
+      <div class="stat-card stat-total">
+        <div class="stat-ico" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div>
+        <div class="stat-body"><div class="stat-value" id="stat-total">–</div><div class="stat-label">Total</div></div>
+      </div>
+      <div class="stat-card stat-done">
+        <div class="stat-ico" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+        <div class="stat-body"><div class="stat-value" id="stat-done">–</div><div class="stat-label">Completed</div></div>
+      </div>
+      <div class="stat-card stat-best">
+        <div class="stat-ico" aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></div>
+        <div class="stat-body"><div class="stat-value" id="stat-best">–</div><div class="stat-label">Best streak</div></div>
+      </div>
     </section>
 
     <section class="stats-detail hidden" id="stats-detail">
